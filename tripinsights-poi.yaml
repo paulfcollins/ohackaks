@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: poi
+  template:
+    metadata:
+      labels:
+        app: poi
+    spec:
+      containers:
+      - name: poi
+        image: registryhdw3309.azurecr.io/tripinsights/poi:1.0
+        env:
+        - name: SQL_USER
+          value: "sqladminhDw3309"
+        - name: SQL_PASSWORD
+          value: "mU7jz2Ja9"
+        - name: SQL_SERVER
+          value: "sqlserverhdw3309.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: poi
