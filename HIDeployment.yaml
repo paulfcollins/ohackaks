@@ -1,0 +1,238 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: poi
+  template:
+    metadata:
+      labels:
+        app: poi
+    spec:
+      containers:
+      - name: poi
+        image: registryhdw3309.azurecr.io/tripinsights/poi:1.0
+        env:
+        - name: SQL_USER
+          value: "sqladminhDw3309"
+        - name: SQL_PASSWORD
+          value: "mU7jz2Ja9"
+        - name: SQL_SERVER
+          value: "sqlserverhdw3309.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"                    
+       resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: poi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trips
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trips
+  template:
+    metadata:
+      labels:
+        app: trips
+    spec:
+      containers:
+      - name: trips
+        image: registryhdw3309.azurecr.io/tripinsights/trips:1.0
+        env:
+        - name: SQL_USER
+          value: "sqladminhDw3309"
+        - name: SQL_PASSWORD
+          value: "mU7jz2Ja9"
+        - name: SQL_SERVER
+          value: "sqlserverhdw3309.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+      resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: trips
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tripviewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tripviewer
+  template:
+    metadata:
+      labels:
+        app: tripviewer
+    spec:
+      containers:
+      - name: trips
+        image: registryhdw3309.azurecr.io/tripinsights/tripviewer:1.0
+        env:
+        - name: USERPROFILE_API_ENDPOINT
+          value: "http://userprofile-backend"
+        - name: TRIPS_API_ENDPOINT
+          value: "http://trips-backend"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: tripviewer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userprofile
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userprofile
+  template:
+    metadata:
+      labels:
+        app: userprofile
+    spec:
+      containers:
+      - name: trips
+        image: registryhdw3309.azurecr.io/tripinsights/userprofile:1.0
+        env:
+        - name: SQL_USER
+          value: "sqladminhDw3309"
+        - name: SQL_PASSWORD
+          value: "mU7jz2Ja9"
+        - name: SQL_SERVER
+          value: "sqlserverhdw3309.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: userprofile
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-java
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-java
+  template:
+    metadata:
+      labels:
+        app: user-java
+    spec:
+      containers:
+      - name: trips
+        image: registryhdw3309.azurecr.io/tripinsights/user-java:latest
+        env:
+        - name: SQL_USER
+          value: "sqladminhDw3309"
+        - name: SQL_PASSWORD
+          value: "mU7jz2Ja9"
+        - name: SQL_SERVER
+          value: "sqlserverhdw3309.database.windows.net"
+        - name: SQL_DBNAME
+          value: "mydrivingDB"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        ports:
+        - containerPort: 80
+          name: user-java
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tripviewer-frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+  - targetPort: 80
+  selector:
+    app: tripviewer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poi-backend
+spec:
+  ports:
+    - port: 8080
+    - targetPort: 80
+  selector:
+    app: poi    
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trips-backend
+spec:
+  ports:
+    - port: 8080
+    - targetPort: 80
+  selector:
+    app: trips   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userprofile-backend
+spec:
+  ports:
+    - port: 8080
+    - targetPort: 80
+  selector:
+    app: userprofile
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-java-backend
+spec:
+  ports:
+    - port: 8080
+    - targetPort: 80
+  selector:
+    app: user-java              
